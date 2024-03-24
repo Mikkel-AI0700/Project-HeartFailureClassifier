@@ -5,31 +5,61 @@ from MainPackage import variables as var
 class Main:
 
         class LoadModel:
-                
-                def __init__ (self):
-                        self.Interaction_Class_Access = Main.InteractModel()
 
+                def __init__(self):
+                        self.Interaction_Class_Access = Main.InteractModel()
+                
                 def Load (self):
                         with open ("/home/mikkel-ai/Desktop/Machine Learning/Heart Failure Classifier/Project-HeartFailureClassifier/Model/DTC_Model.pkl", "rb") as DTC_Model_Dump:
                                 self.Interaction_Class_Access.DTC_Model = pickle.load(DTC_Model_Dump)
+                        print("[+] Successfully loaded DecisionTreeClassifier model")
 
         class InteractModel:
-                
-                def __init__ (self):
+
+                def __init__(self):
                         self.DTC_Model = None
                         self.Error_Dictionary = {
-                                "IDT_NOT_DESIRED_DATATYPE_ERROR": "[-] Error: One of the values is not a string, number or float",
+                                "IDT_NOT_DESIRED_DATATYPE_ERROR": "[-] Error: One of the values is not a number or float",
                                 "VE_NOT_DESIRED_INPUT": "[-] Error: One of the input is not one of the following: Yes, No, Male, Female"
                         }
 
                 def Validate_Inputs (self):
 
-                        for BinaryValue in DictionaryVariables["Binary_Variables"].values():
-                                pass
+                        for (ActualValue, CurrentlyLoopedKey) in zip(DictionaryVariables["Binary_Variables"].values(), DictionaryVariables["Binary_Variables"].keys()):
+                                StringVersionOfValue = str(ActualValue)
+                                try:
+                                        if StringVersionOfValue.lower() == "yes" or StringVersionOfValue.lower() == "male":
+                                                DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: 1})
+                                        elif StringVersionOfValue.lower() == "no" or StringVersionOfValue.lower() == "female":
+                                                DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: 0})
+                                        else:
+                                                raise ValueError(self.Error_Dictionary.get("VE_NOT_DESIRED_INPUT"))
+                                except ValueError as VAL_ERROR:
+                                        print(VAL_ERROR)
+                                        main()
+
+                        for NumberValue in zip(DictionaryVariables["Integer_Continuous_Variables"].values()):
+                                try:
+                                        if isinstance(NumberValue, int) or isinstance(NumberValue, float):
+                                                continue
+                                        else:
+                                                raise TypeError(self.Error_Dictionary.get("VE_NOT_DESIRED_INPUT"))
+                                except TypeError as IDT_ERROR:
+                                        print(IDT_ERROR)
+                                        main()
+                        
+                        print("[+] All inputs are correct, proceeding with using the Machine Learning model")
+                        self.Interact()
+
+                def Interact (self):
+                        pass
 
 def main ():
         
-        MainClass = Main()
+        Nested_Load_Model = Main.LoadModel()
+        Nested_Interact_Model = Main.InteractModel()
+
+        Nested_Load_Model.Load()
 
         global DictionaryQuestions
         global DictionaryVariables
