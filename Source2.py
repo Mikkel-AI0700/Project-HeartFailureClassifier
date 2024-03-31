@@ -1,137 +1,118 @@
 import pickle
 import pandas as pd
-from MainPackage import variables
+from MainPackage import variables as var
 
 class Main:
 
         class LoadModel:
 
-                def __init__ (self):
-                        self.Interaction_Class_Access = Main.ModelInteraction()
-
+                def __init__(self):
+                        self.Interaction_Class_Access = Main.InteractModel()
+                
                 def Load (self):
-                        with open("/home/ai/Desktop/Machine Learning/Legit ML Projects/Heart Failure/Model/DTC_Model.pkl", "wb") as ML_Model_Dump:
-                                self.Interaction_Class_Access.DTC_Model = pickle.load(ML_Model_Dump)
-                                print("[+] Successfully loaded model")
+                        with open ("/home/mikkel-ai/Desktop/Machine Learning/Heart Failure Classifier/Project-HeartFailureClassifier/Model/DTC_Model.pkl", "rb") as DTC_Model_Dump:
+                                self.Interaction_Class_Access.DTC_Model = pickle.load(DTC_Model_Dump)
+                        print("[+] Successfully loaded DecisionTreeClassifier model")
 
-        class ModelInteraction:
+        class InteractModel:
 
-                def __init__ (self, MainVariableArray):
+                def __init__(self):
                         self.DTC_Model = None
+                        self.VE_NOT_DESIRED_INPUT = "[-] Error: One of the input is not one of the following: Yes, No, Male, Female"
                         self.Error_Dictionary = {
-                                "IDT_NOT_DESIRED_TYPE_ERROR": "[-] Error: One of the values isn't: bool, int, float or instead NULL",
-                                "VE_UNEXPECTED_INPUT_ERROR": "[-] Error: Yes or no value expected, instead got anything other than a yes or no"
-                        }
-                        self.Dictionary_Of_Inputs = {
-                                "Binary_Questions": {
-                                        "Patient_Anemia": MainVariableArray[0][0],
-                                        "Patient_Diabetes": MainVariableArray[0][1],
-                                        "Patient_HBP": MainVariableArray[0][2],
-                                        "Patient_Sex": MainVariableArray[0][3],
-                                        "Patient_Smoking": MainVariableArray[0][4]
-                                },
-                                "Integer_Questions": {
-                                        "Patient_Age": MainVariableArray[1][0],
-                                        "Patient_Creatinine_Phospo": MainVariableArray[1][1],
-                                        "Patient_Ejection_Fraction": MainVariableArray[1][2],
-                                        "Patient_Serum_Sodium": MainVariableArray[1][3],
-                                        "Patient_Time": MainVariableArray[1][4]
-                                },
-                                "Continuous_Questions": {
-                                        "Patient_Platelets": MainVariableArray[2][0],
-                                        "Patient_Serum_Creatinine": MainVariableArray[2][1]
-                                }
+                                "IDT_NOT_DESIRED_DATATYPE_ERROR": "[-] Error: One of the values is not a number or float",
+                                "VE_NOT_DESIRED_INPUT": "[-] Error: One of the input is not one of the following: Yes, No, Male, Female"
                         }
 
                 def Validate_Inputs (self):
-                        
-                        # For Loop for binary questions
-                        for BinaryValue in self.Dictionary_Of_Inputs["Binary_Questions"].values():
-                                BinaryStringFormat = str(BinaryValue)
-                                try:
-                                        if BinaryValue is None or BinaryStringFormat == "":
-                                                raise TypeError(self.Error_Dictionary.get("IDT_NOT_DESIRED_TYPE_ERROR"))
-                                        if BinaryStringFormat.lower() == "yes" or BinaryStringFormat.lower() == "male":
-                                                BinaryValue = 1
-                                        elif BinaryStringFormat.lower() == "no" or BinaryStringFormat.lower() == "female":
-                                                BinaryValue = 0
-                                        else:
-                                                raise ValueError(self.Error_Dictionary.get("VE_UNEXPECTED_INPUT_ERROR"))
-                                except ValueError as VALUE_ERROR:
-                                        print(VALUE_ERROR)
-                                except TypeError as TYPE_ERROR:
-                                        print(TYPE_ERROR)
 
-                        # For Loop for integer questions
-                        for IntegerValue in self.Dictionary_Of_Inputs["Integer_Questions"].values():
+                        for CurrentlyLoopedKey, CurrentlyLoopedValue in DictionaryVariables["Binary_Variables"].items():
+                                StringVersion = str(CurrentlyLoopedValue)
                                 try:
-                                        if IntegerValue is None:
-                                                raise ValueError(self.Error_Dictionary.get("VE_NULL_VALUE_DETECTED_ERROR"))
-                                        if not int(IntegerValue):
-                                                raise TypeError(self.Error_Dictionary.get("IDT_NOT_DESIRED_TYPE_ERROR"))
-                                except ValueError as NULL_VALUE_ERROR:
-                                        print(NULL_VALUE_ERROR)
+                                        if StringVersion.lower() == "yes" or StringVersion.lower() == "male":
+                                                DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: 1})
+                                        elif StringVersion.lower() == "no" or StringVersion.lower() == "female":
+                                                DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: 0})
+                                        else:
+                                                #raise ValueError(self.Error_Dictionary.get("VE_NOT_DESIRED_INPUT"))
+                                                pass
+                                except ValueError:
+                                        print("[-] Error - Key: {}, Value: {}".format(CurrentlyLoopedKey, CurrentlyLoopedValue))
+
+                        for NumberValue in zip(DictionaryVariables["Integer_Continuous_Variables"].values()):
+                                try:
+                                        if isinstance(NumberValue, int) or isinstance(NumberValue, float):
+                                                continue
+                                        else:
+                                                raise TypeError(self.Error_Dictionary.get("VE_NOT_DESIRED_INPUT"))
                                 except TypeError as IDT_ERROR:
                                         print(IDT_ERROR)
+                                        main()
                         
-                        # For Loop for continuous questions
-                        for ContinuousValue in self.Dictionary_Of_Inputs["Continuous_Questions"].values():
-                                try:
-                                        if ContinuousValue is None:
-                                                raise ValueError(self.Error_Dictionary.get("VE_NULL_VALUE_DETECTED_ERROR"))
-                                        if not float(ContinuousValue):
-                                                raise TypeError(self.Error_Dictionary.get("IDT_NOT_DESIRED_TYPE_ERROR"))
-                                except ValueError as NULL_VALUE_ERROR:
-                                        print(NULL_VALUE_ERROR)
-                                except TypeError as IDT_ERROR:
-                                        print(IDT_ERROR)
+                        print("[+] All inputs are correct, proceeding with using the Machine Learning model")
+                        self.Interact()
 
                 def Interact (self):
-                        pass
+                        
+                        for (DicKey1, DicValue1), (DicKey2, DicValue2) in zip(DictionaryVariables["Binary_Variables"].items(), DictionaryVariables["Integer_Continuous_Variables"].items()):
+                                pass
 
 def main ():
+        
+        Nested_Load_Model = Main.LoadModel()
+        Nested_Interact_Model = Main.InteractModel()
 
-        MainClass = Main()
+        Nested_Load_Model.Load()
 
-        global DictionaryHousingQuestions
-        global DictionaryHousingVariables
+        global DictionaryQuestions
+        global DictionaryVariables
 
-        DictionaryHousingQuestions = {
-                "Binary_Questions": {
-                        "If_Patient_Has_Anemia": variables.If_Patient_Has_Anemia,
-                        "If_Patient_Has_Diabetes": variables.If_Patient_Has_Diabetes,
-                        "If_Patient_Has_HBP": variables.If_Patient_Has_HBP,
-                        "If_Male_Or_Female": variables.If_Patient_Is_Male_Or_Female,
-                        "If_Patient_Is_Smoking": variables.If_Patient_Is_Smoking
+        DictionaryQuestions = {
+                "Binary_Question": {
+                        "Anemia_Question": var.If_Patient_Has_Anemia,
+                        "Diabetes_Question": var.If_Patient_Has_Diabetes,
+                        "HBP_Question": var.If_Patient_Has_HBP,
+                        "Gender_Question": var.If_Patient_Is_Male_Or_Female,
+                        "Smoking_Question": var.If_Patient_Is_Smoking
                 },
-                "Integer_Continuous_Questions": {
-                        "Age_Question": variables.Patient_Age_Question,
-                        "Creatinine_Phospo_Question": variables.Patient_Creatinine_Phospho_Question,
-                        "Ejection_Fraction_Question": variables.Patient_Ejection_Fraction_Question,
-                        "Serum_Sodium_Question": variables.Patient_Serum_Sodium_Question,
-                        "Time_Question": variables.Patient_Time,
-                        "Platelets_Amount_Question": variables.Patient_Platelets_Amount,
-                        "Serum_Creatinine_Question": variables.Patient_Serum_Sodium_Question
+                "Integer_Continuous_Question": {
+                        "Age_Question": var.Patient_Age_Question,
+                        "Creatinine_Phospho_Question": var.Patient_Creatinine_Phospho_Question,
+                        "Ejection_Fraction_Question": var.Patient_Ejection_Fraction_Question,
+                        "Serum_Sodium_Question": var.Patient_Serum_Sodium_Question,
+                        "Time_Question": var.Patient_Time,
+                        "Platelets_Question": var.Patient_Platelets_Amount,
+                        "Serum_Creatinine_Question": var.Patient_Serum_Creatinine
                 }
         }
 
-        DictionaryHousingVariables = {
+        DictionaryVariables = {
                 "Binary_Variables": {
-                        "Anemia_Input": variables.PatientAnemia,
-                        "Diabetes_Input": variables.PatientDiabetes,
-                        "HBP_Input": variables.PatientHBP,
-                        "Gender_Input": variables.PatientSex,
-                        "Smoking_Input": variables.PatientSmoking
+                        "Anemia_Variable": var.PatientAnemia,
+                        "Diabetes_Variable": var.PatientDiabetes,
+                        "HBP_Variable": var.PatientHBP,
+                        "Gender_Variable": var.PatientSex,
+                        "Smoking_Variable": var.PatientSmoking
                 },
                 "Integer_Continuous_Variables": {
-                        "Age_Input": variables.PatientAge,
-                        "Creatinine_Phospo_Input": variables.PatientCreatininePhospo,
-                        "Ejection_Fraction_Input": variables.PatientEjectionFrac,
-                        "Serum_Sodium_Input": variables.PatientSerumSodium,
-                        "Time_Input": variables.PatientTime,
-                        "Platelets_Input": variables.PatientPlatelets,
-                        "Serum_Creatinine_Input": variables.PatientSerumCreatinine
+                        "Age_Variable": var.PatientAge,
+                        "Creatinine_Phospho_Variable": var.PatientCreatininePhospo,
+                        "Ejection_Fraction_Variable": var.PatientEjectionFrac,
+                        "Serum_Sodium_Variable": var.PatientSerumSodium,
+                        "Time_Variable": var.PatientTime,
+                        "Platelets_Variable": var.PatientPlatelets,
+                        "Serum_Creatinine_Variable": var.PatientSerumCreatinine
                 }
         }
+
+        for (PatientQuestion, CurrentlyLoopedKey) in zip(DictionaryQuestions["Binary_Question"].values(), DictionaryVariables["Binary_Variables"].keys()):
+                UserAnswer = input(PatientQuestion)
+                DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: UserAnswer})
+
+        for (PatientQuestion, CurrentlyLoopedKey) in zip(DictionaryQuestions["Integer_Continuous_Question"].values(), DictionaryVariables["Integer_Continuous_Variables"].keys()):
+                UserAnswer = input(PatientQuestion)
+                DictionaryVariables["Integer_Continuous_Variables"].update({CurrentlyLoopedKey: UserAnswer})
+
+        Nested_Interact_Model.Validate_Inputs()
 
 main()

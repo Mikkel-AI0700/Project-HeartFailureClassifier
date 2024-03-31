@@ -11,48 +11,71 @@ class Main:
                 
                 def Load (self):
                         with open ("/home/mikkel-ai/Desktop/Machine Learning/Heart Failure Classifier/Project-HeartFailureClassifier/Model/DTC_Model.pkl", "rb") as DTC_Model_Dump:
-                                self.Interaction_Class_Access.DTC_Model = pickle.load(DTC_Model_Dump)
-                        print("[+] Successfully loaded DecisionTreeClassifier model")
+                                var.DecisionTreeClassifierModel = pickle.load(DTC_Model_Dump)
+                        print("\n\n[+] Successfully loaded DecisionTreeClassifier model\n\n")
 
         class InteractModel:
 
                 def __init__(self):
                         self.DTC_Model = None
-                        self.Error_Dictionary = {
-                                "IDT_NOT_DESIRED_DATATYPE_ERROR": "[-] Error: One of the values is not a number or float",
-                                "VE_NOT_DESIRED_INPUT": "[-] Error: One of the input is not one of the following: Yes, No, Male, Female"
-                        }
-
+                        self.VE_NOT_DESIRED_INPUT_ONE = "[-] Error: One of the input is not one of the following: Yes, No, Male, Female"
+                        self.VE_NOT_DESIRED_INPUT_TWO = "[-] Error: One of the inputs is neither int or float"
+                        
                 def Validate_Inputs (self):
 
-                        for (ActualValue, CurrentlyLoopedKey) in zip(DictionaryVariables["Binary_Variables"].values(), DictionaryVariables["Binary_Variables"].keys()):
-                                StringVersionOfValue = str(ActualValue)
+                        for Binary_CLK, Binary_CLV in DictionaryVariables["Binary_Variables"].items():
+                                StringVersion = str(Binary_CLV)
                                 try:
-                                        if StringVersionOfValue.lower() == "yes" or StringVersionOfValue.lower() == "male":
-                                                DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: 1})
-                                        elif StringVersionOfValue.lower() == "no" or StringVersionOfValue.lower() == "female":
-                                                DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: 0})
+                                        if StringVersion.lower() == "yes" or StringVersion.lower() == "male":
+                                                DictionaryVariables["Binary_Variables"].update({Binary_CLK: 1})
+                                        elif StringVersion.lower() == "no" or StringVersion.lower() == "female":
+                                                DictionaryVariables["Binary_Variables"].update({Binary_CLK: 0})
                                         else:
-                                                raise ValueError(self.Error_Dictionary.get("VE_NOT_DESIRED_INPUT"))
+                                                raise ValueError(self.VE_NOT_DESIRED_INPUT_ONE)
                                 except ValueError as VAL_ERROR:
-                                        print(VAL_ERROR)
-                                        main()
+                                        print("\n\n{} \n[-] Error: Key - {} | Value - {}\n\n".format(VAL_ERROR, Binary_CLK, Binary_CLV))
 
-                        for NumberValue in zip(DictionaryVariables["Integer_Continuous_Variables"].values()):
+                        for Number_CLK, Number_CLV in DictionaryVariables["Integer_Continuous_Variables"].items():
                                 try:
-                                        if isinstance(NumberValue, int) or isinstance(NumberValue, float):
+                                        if int(Number_CLV) or float(Number_CLV):
                                                 continue
                                         else:
-                                                raise TypeError(self.Error_Dictionary.get("VE_NOT_DESIRED_INPUT"))
-                                except TypeError as IDT_ERROR:
-                                        print(IDT_ERROR)
-                                        main()
+                                                raise ValueError(self.VE_NOT_DESIRED_INPUT_TWO)
+                                except ValueError as VAL_ERROR:
+                                        print("\n\n{} \n[-] Error: Key - {} | Value - {}\n\n".format(VAL_ERROR, Number_CLK, Number_CLV))
                         
-                        print("[+] All inputs are correct, proceeding with using the Machine Learning model")
-                        self.Interact()
+                        print("\n\n[+] All inputs are correct, proceeding with sorting inputs")
+                        self.Sort_Dictionary_And_Convert()
 
-                def Interact (self):
-                        pass
+                def Sort_Dictionary_And_Convert (self):
+                        
+                        for Element in var.ArrayToCompare:
+                                for Outer_DK, Outer_DV in DictionaryVariables["Binary_Variables"].items():
+                                        for Inner_DK, Inner_DV in DictionaryVariables["Integer_Continuous_Variables"].items():
+                                                if Outer_DK == Element:
+                                                        var.DictionaryToConvert.update({Outer_DK: Outer_DV})
+                                                elif Inner_DK == Element:
+                                                        var.DictionaryToConvert.update({Inner_DK: Inner_DV})
+                                                else:
+                                                        continue
+
+                        for Final_DK, Final_DV in var.DictionaryToConvert.items():
+                                print("Key: {} | Value: {}".format(Final_DK, Final_DV))
+
+                        var.DataframeToFeed = pd.DataFrame(data=var.DictionaryToConvert, columns=var.ArrayOfColumnsForDF)
+                        print("\n\n[+] Dictionary successfully converted to Pandas Dataframe, proceeding with making predictions...")
+                        self.Interact_With_Model()
+
+                def Interact_With_Model (self):
+                        
+                        ModelPrediction = var.DecisionTreeClassifierModel.predict(var.DataframeToFeed)
+
+                        if ModelPrediction == 0:
+                                print("\n\n---------- RESULT ----------")
+                                print("[+] Patient is not going to have a heart attack")
+                        else:
+                                print("\n\n---------- RESULT ----------")
+                                print("Patient in more likely to have a heart attack")
 
 def main ():
         
@@ -102,6 +125,14 @@ def main ():
                 }
         }
 
+        """
+        Both loops do the same thing but in different nested dictionaries.
+        The for loop will loop through DictionaryQuestion values and DictionaryVariables keys using zip function.
+        Next, it will capture user input then update the key value in the currently looped nested dictionary with the user input
+
+        Believe me, there is no other way to make this. Atleast in my level :D
+        """
+
         for (PatientQuestion, CurrentlyLoopedKey) in zip(DictionaryQuestions["Binary_Question"].values(), DictionaryVariables["Binary_Variables"].keys()):
                 UserAnswer = input(PatientQuestion)
                 DictionaryVariables["Binary_Variables"].update({CurrentlyLoopedKey: UserAnswer})
@@ -109,5 +140,7 @@ def main ():
         for (PatientQuestion, CurrentlyLoopedKey) in zip(DictionaryQuestions["Integer_Continuous_Question"].values(), DictionaryVariables["Integer_Continuous_Variables"].keys()):
                 UserAnswer = input(PatientQuestion)
                 DictionaryVariables["Integer_Continuous_Variables"].update({CurrentlyLoopedKey: UserAnswer})
+
+        Nested_Interact_Model.Validate_Inputs()
 
 main()

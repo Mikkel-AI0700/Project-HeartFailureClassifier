@@ -11,8 +11,8 @@ class Main:
                 
                 def Load (self):
                         with open ("/home/mikkel-ai/Desktop/Machine Learning/Heart Failure Classifier/Project-HeartFailureClassifier/Model/DTC_Model.pkl", "rb") as DTC_Model_Dump:
-                                self.Interaction_Class_Access.DTC_Model = pickle.load(DTC_Model_Dump)
-                        print("[+] Successfully loaded DecisionTreeClassifier model")
+                                var.DecisionTreeClassifierModel = pickle.load(DTC_Model_Dump)
+                        print("\n\n[+] Successfully loaded DecisionTreeClassifier model\n\n")
 
         class InteractModel:
 
@@ -33,8 +33,7 @@ class Main:
                                         else:
                                                 raise ValueError(self.VE_NOT_DESIRED_INPUT_ONE)
                                 except ValueError as VAL_ERROR:
-                                        print(VAL_ERROR)
-                                        print("[-] Error - Key: {}, Value: {}".format(Binary_CLK, Binary_CLV))
+                                        print("\n\n{} \n[-] Error: Key - {} | Value - {}\n\n".format(VAL_ERROR, Binary_CLK, Binary_CLV))
 
                         for Number_CLK, Number_CLV in DictionaryVariables["Integer_Continuous_Variables"].items():
                                 try:
@@ -43,16 +42,40 @@ class Main:
                                         else:
                                                 raise ValueError(self.VE_NOT_DESIRED_INPUT_TWO)
                                 except ValueError as VAL_ERROR:
-                                        print(VAL_ERROR)
-                                        print("[-] Error - Key: {}, Value: {}".format(Number_CLK, Number_CLV))
+                                        print("\n\n{} \n[-] Error: Key - {} | Value - {}\n\n".format(VAL_ERROR, Number_CLK, Number_CLV))
                         
-                        print("[+] All inputs are correct, proceeding with using the Machine Learning model")
-                        self.Interact()
+                        print("\n\n[+] All inputs are correct, proceeding with sorting inputs")
+                        self.Sort_Dictionary_And_Convert()
 
-                def Interact (self):
+                def Sort_Dictionary_And_Convert (self):
                         
-                        for (DicKey1, DicValue1), (DicKey2, DicValue2) in zip(DictionaryVariables["Binary_Variables"].items(), DictionaryVariables["Integer_Continuous_Variables"].items()):
-                                pass
+                        for Element in var.ArrayToCompare:
+                                for Outer_DK, Outer_DV in DictionaryVariables["Binary_Variables"].items():
+                                        for Inner_DK, Inner_DV in DictionaryVariables["Integer_Continuous_Variables"].items():
+                                                if Outer_DK == Element:
+                                                        var.DictionaryToConvert.update({Outer_DK: Outer_DV})
+                                                elif Inner_DK == Element:
+                                                        var.DictionaryToConvert.update({Inner_DK: Inner_DV})
+                                                else:
+                                                        continue
+
+                        for Final_DK, Final_DV in var.DictionaryToConvert.items():
+                                print("Key: {} | Value: {}".format(Final_DK, Final_DV))
+
+                        var.DataframeToFeed = pd.DataFrame(data=var.DictionaryToConvert, columns=var.ArrayOfColumnsForDF)
+                        print("\n\n[+] Dictionary successfully converted to Pandas Dataframe, proceeding with making predictions...")
+                        self.Interact_With_Model()
+
+                def Interact_With_Model (self):
+                        
+                        ModelPrediction = var.DecisionTreeClassifierModel.predict(var.DataframeToFeed)
+
+                        if ModelPrediction == 0:
+                                print("\n\n---------- RESULT ----------")
+                                print("[+] Patient is not going to have a heart attack")
+                        else:
+                                print("\n\n---------- RESULT ----------")
+                                print("Patient in more likely to have a heart attack")
 
 def main ():
         
@@ -101,6 +124,14 @@ def main ():
                         "Serum_Creatinine_Variable": var.PatientSerumCreatinine
                 }
         }
+
+        """
+        Both loops do the same thing but in different nested dictionaries.
+        The for loop will loop through DictionaryQuestion values and DictionaryVariables keys using zip function.
+        Next, it will capture user input then update the key value in the currently looped nested dictionary with the user input
+
+        Believe me, there is no other way to make this. Atleast in my level :D
+        """
 
         for (PatientQuestion, CurrentlyLoopedKey) in zip(DictionaryQuestions["Binary_Question"].values(), DictionaryVariables["Binary_Variables"].keys()):
                 UserAnswer = input(PatientQuestion)
