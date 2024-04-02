@@ -48,22 +48,35 @@ class Main:
                         self.Sort_Dictionary_And_Convert()
 
                 def Sort_Dictionary_And_Convert (self):
+
+                        """
+                        First it will loop through the key-value pair of the Dictionary to convert then it does the same for the two nested dictionaries.
+                        Next, it will compare if the key is the in the dictionary to convert is the same as the one in the nested dictionaries.
+                        If it is, then it will append the value of that nested dictionary value to DTC_CLV array, if not then it will skip to the next iteration
+                        """
+
+                        """
+                        Due to the code logic of the first group of nested loops, a second group nested loop must be used.
+                        It then again loops through the dictionary to convert values, then looped again with an index.
+                        While the length of the array in the dictionary value is unequal to 1, it will continuously remove elements.
+                        """
                         
-                        for Element in var.ArrayToCompare:
-                                for Outer_DK, Outer_DV in DictionaryVariables["Binary_Variables"].items():
-                                        for Inner_DK, Inner_DV in DictionaryVariables["Integer_Continuous_Variables"].items():
-                                                if Outer_DK == Element:
-                                                        var.DictionaryToConvert.update({Outer_DK: Outer_DV})
-                                                elif Inner_DK == Element:
-                                                        var.DictionaryToConvert.update({Inner_DK: Inner_DV})
+                        for DTC_CLK, DTC_CLV in var.DictionaryToConvert.items():
+                                for Binary_CLK, Binary_CLV in DictionaryVariables["Binary_Variables"].items():
+                                        for Number_CLK, Number_CLV in DictionaryVariables["Integer_Continuous_Variables"].items():
+                                                if DTC_CLK == Binary_CLK:
+                                                        DTC_CLV.append(Binary_CLV)
+                                                elif DTC_CLK == Number_CLK:
+                                                        DTC_CLV.append(Number_CLV)
                                                 else:
                                                         continue
+                        
+                        for DTC_Value in var.DictionaryToConvert.values():
+                                for Index, ArrayElement in enumerate(DTC_Value):
+                                        while len(DTC_Value) != 1:
+                                                DTC_Value.pop(Index)
 
-                        for Final_DK, Final_DV in var.DictionaryToConvert.items():
-                                print("Key: {} | Value: {}".format(Final_DK, Final_DV))
-
-                        var.DataframeToFeed = pd.DataFrame(data=var.DictionaryToConvert, columns=var.ArrayOfColumnsForDF)
-                        print("\n\n[+] Dictionary successfully converted to Pandas Dataframe, proceeding with making predictions...")
+                        print("[+] All inputs sorted, proceeding with interacting with DecisionTreeClassifier model")
                         self.Interact_With_Model()
 
                 def Interact_With_Model (self):
